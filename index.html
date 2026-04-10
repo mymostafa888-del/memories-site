@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memories App</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial;
+    background: linear-gradient(135deg,#ffd1dc,#ffe4e1);
+}
+
+.container{
+    max-width:400px;
+    margin:50px auto;
+    text-align:center;
+}
+
+button{
+    padding:12px;
+    margin:10px;
+    border:none;
+    border-radius:10px;
+    background:#ff4081;
+    color:white;
+    cursor:pointer;
+    width:80%;
+}
+
+input{
+    padding:10px;
+    margin:10px;
+    width:80%;
+    border-radius:10px;
+    border:1px solid #ccc;
+}
+
+/* menu */
+.menu{
+    position:fixed;
+    top:10px;
+    right:10px;
+    font-size:25px;
+    cursor:pointer;
+}
+
+.sidebar{
+    position:fixed;
+    right:-200px;
+    top:0;
+    width:200px;
+    height:100%;
+    background:#fff;
+    padding:20px;
+    transition:0.3s;
+}
+
+.sidebar button{
+    width:100%;
+}
+
+.show{
+    right:0;
+}
+
+/* chat */
+.chatBox{
+    background:white;
+    height:300px;
+    overflow:auto;
+    padding:10px;
+    border-radius:10px;
+}
+
+.msgMe{
+    background:#dcf8c6;
+    margin:5px;
+    padding:8px;
+    border-radius:10px;
+    text-align:left;
+}
+
+.msgOther{
+    background:#eee;
+    margin:5px;
+    padding:8px;
+    border-radius:10px;
+    text-align:right;
+}
+
+.memory{
+    background:white;
+    margin:10px;
+    padding:10px;
+    border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="menu" onclick="toggleMenu()">☰</div>
+
+<div class="sidebar" id="menu">
+<button onclick="showMem()">الذكريات</button>
+<button onclick="showChat()">الشات</button>
+<button onclick="showInfo()">بيانات الروم</button>
+<button onclick="logout()">خروج</button>
+</div>
+
+<div class="container" id="home">
+<h2>Memories App</h2>
+<button onclick="goCreate()">إنشاء روم</button>
+<button onclick="goJoin()">دخول روم</button>
+</div>
+
+<div class="container" id="create" style="display:none;">
+<h3>إنشاء روم</h3>
+<input id="name1" placeholder="اسمك">
+<p>كود الروم: <b id="code"></b></p>
+<button onclick="createRoom()">إنشاء</button>
+</div>
+
+<div class="container" id="join" style="display:none;">
+<h3>دخول روم</h3>
+<input id="name2" placeholder="اسمك">
+<input id="roomInput" placeholder="كود الروم">
+<button onclick="joinRoom()">دخول</button>
+</div>
+
+<div class="container" id="memPage" style="display:none;">
+<h3>الذكريات</h3>
+<input id="desc" placeholder="اكتب ذكرى">
+<input type="file" id="img">
+<button onclick="addMem()">إضافة</button>
+<div id="memories"></div>
+</div>
+
+<div class="container" id="chatPage" style="display:none;">
+<h3>الشات</h3>
+<div class="chatBox" id="chat"></div>
+<input id="msg">
+<button onclick="sendMsg()">إرسال</button>
+</div>
+
+<div class="container" id="infoPage" style="display:none;">
+<h3>بيانات الروم</h3>
+<p>الكود: <span id="roomCode"></span></p>
+<p>عدد المستخدمين: <span id="count"></span></p>
+</div>
+
+<script>
+let user="";
+let room="";
+let users=0;
+let mem=[];
+let chat=[];
+
+function toggleMenu(){
+ document.getElementById("menu").classList.toggle("show");
+}
+
+function goCreate(){
+ home.style.display="none";
+ create.style.display="block";
+ room=Math.random().toString(36).substring(2,7);
+ document.getElementById("code").innerText=room;
+}
+
+function goJoin(){
+ home.style.display="none";
+ join.style.display="block";
+}
+
+function createRoom(){
+ user=document.getElementById("name1").value;
+ if(!user) return alert("اكتب اسمك");
+ users=1;
+ openRoom();
+}
+
+function joinRoom(){
+ user=document.getElementById("name2").value;
+ room=document.getElementById("roomInput").value;
+ if(!user||!room) return alert("كمل البيانات");
+ users++;
+ openRoom();
+}
+
+function openRoom(){
+ create.style.display="none";
+ join.style.display="none";
+ memPage.style.display="block";
+ document.getElementById("roomCode").innerText=room;
+ document.getElementById("count").innerText=users;
+}
+
+function showMem(){
+ hideAll();
+ memPage.style.display="block";
+}
+
+function showChat(){
+ hideAll();
+ chatPage.style.display="block";
+}
+
+function showInfo(){
+ hideAll();
+ infoPage.style.display="block";
+}
+
+function hideAll(){
+ memPage.style.display="none";
+ chatPage.style.display="none";
+ infoPage.style.display="none";
+}
+
+function addMem(){
+ let text=desc.value;
+ let file=img.files[0];
+ let obj={text,img:null};
+ if(file){obj.img=URL.createObjectURL(file);} 
+ mem.push(obj);
+ renderMem();
+}
+
+function renderMem(){
+ memories.innerHTML="";
+ mem.forEach(m=>{
+ memories.innerHTML+=`<div class="memory">${m.img?`<img src="${m.img}" width="100%">`:""}<p>${m.text}</p></div>`;
+ });
+}
+
+function sendMsg(){
+ let text=msg.value;
+ if(!text) return;
+ chat.push({user,text});
+ msg.value="";
+ renderChat();
+}
+
+function renderChat(){
+ chatBox.innerHTML="";
+ chat.forEach(c=>{
+ if(c.user===user){
+ chatBox.innerHTML+=`<div class="msgMe">${c.text}</div>`;
+ }else{
+ chatBox.innerHTML+=`<div class="msgOther">${c.text}</div>`;
+ }
+ });
+}
+
+function logout(){
+ location.reload();
+}
+</script>
+
+</body>
+</html>

@@ -1,20 +1,28 @@
+/* Created by: Mostafa Mabrok
+   Feature: Image Upload (ImgBB) + Real-time Database (Firebase)
+*/
+
 let user = "", room = "", code = "", posts = [], messages = [];
 const IMGBB_KEY = "02e53bd2cb207b79a2d6cdc72860038e";
 
+// التحكم في القائمة الجانبية
 function toggleMenu() {
     document.getElementById("menu").classList.toggle("show");
     document.getElementById("overlay").classList.toggle("active");
 }
 
+// الوضع الليلي
 function toggleDark() {
     document.body.classList.toggle("dark-mode", document.getElementById("themeCheck").checked);
 }
 
+// تحديث نص اختيار الصورة
 function updateLabel() { 
     if(document.getElementById("memFile").files[0]) 
         document.getElementById("fileLabel").innerText = "✅ الصورة جاهزة"; 
 }
 
+// التنقل بين الصفحات
 function showPage(p) {
     document.querySelectorAll('.container').forEach(div => div.style.display = 'none');
     document.getElementById(p).style.display = 'block';
@@ -26,6 +34,7 @@ function showPage(p) {
     if(document.getElementById("menu").classList.contains("show")) toggleMenu();
 }
 
+// بدء الغرفة (إنشاء أو انضمام)
 async function initRoom(isCreate) {
     user = isCreate ? document.getElementById("userName1").value : document.getElementById("userName2").value;
     room = isCreate ? document.getElementById("roomNameInput").value : "غرفة ذكريات";
@@ -42,18 +51,24 @@ async function initRoom(isCreate) {
     showPage('memPage');
 }
 
+// الاستماع للبيانات من فايربيز (لايف)
 function listenToFirebase() {
     const { onSnapshot, collection, query, orderBy } = window.fbTools;
+    
+    // استماع للبوستات
     onSnapshot(query(collection(window.db, "rooms", code, "posts"), orderBy("id", "desc")), (snap) => {
         posts = snap.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
         renderPosts();
     });
+
+    // استماع للشات
     onSnapshot(query(collection(window.db, "rooms", code, "msgs"), orderBy("time", "asc")), (snap) => {
         messages = snap.docs.map(doc => doc.data());
         renderChat();
     });
 }
 
+// رفع الذكرى (صورة + نص)
 async function uploadMemory() {
     const { collection, addDoc } = window.fbTools;
     let text = document.getElementById("memText").value;
@@ -63,21 +78,16 @@ async function uploadMemory() {
     if(!text && !file) return;
     
     let imgUrl = null;
-
     if(file) {
         label.innerText = "⏳ جاري الرفع...";
         let formData = new FormData();
         formData.append("image", file);
-        
         try {
-            let res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
-                method: "POST",
-                body: formData
-            });
+            let res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
             let data = await res.json();
             imgUrl = data.data.url;
         } catch (e) {
-            alert("فشل رفع الصورة، جرب تاني");
+            alert("فشل رفع الصورة");
             label.innerText = "📸 اختر صورة";
             return;
         }
@@ -93,6 +103,40 @@ async function uploadMemory() {
     label.innerText = "📸 اختر صورة";
 }
 
+// عرض البوستات (الذكريات)
+function renderPosts() {
+    document.getElementById("postsList").innerHTML = posts.map(p => `
+        <div class="post">
+            <div class="post-header"><b>${p.user}</b> <small>${p.timeStr}</small></div>
+            ${p.img ? `<div class="post-img-container"><img src="${p.img}" class="post-img" onclick="zoom('${p.img}')"></div>` : ''}
+            <div class="post-actions">
+                <div style="display:flex; align-items:center; gap:5px;">
+                   <span style="cursor:pointer; font-size:22px" onclick="toggleLike('${p.docId}', ${JSON.stringify(p.likedBy)})">
+                        ${p.likedBy.includes(user) ? '❤️' : '🤍'}
+                    </span>
+                    <b>${p.likedBy.length}</b>
+                </div>
+                ${p.img ? `<a href="${p.img}" target="_blank" style="text-decoration:none; font-size:20px">💾</a>` : ''}
+            </div>
+            <div style="padding:15px; text-align:right">${p.text}</div>
+        </div>
+    `).join('');
+}
+
+// عرض رسايل الشات
+function renderChat() {
+    let div = document.getElementById("chatMsgs");
+    div.innerHTML = messages.map(m => `
+        <div class="msg ${m.user === user ? 'msg-me' : 'msg-other'}">
+            <span class="msg-sender">${m.user}</span>
+            <div>${m.text}</div>
+            <small style="opacity:0.6; font-size:8px; display:block; margin-top:3px">${m.timeStr}</small>
+        </div>
+    `).join('');
+    div.scrollTop = div.scrollHeight;
+}
+
+// نظام اللايكات
 async function toggleLike(docId, likedBy) {
     const { doc, updateDoc, arrayUnion, arrayRemove } = window.fbTools;
     const postRef = doc(window.db, "rooms", code, "posts", docId);
@@ -103,6 +147,7 @@ async function toggleLike(docId, likedBy) {
     }
 }
 
+// إرسال رسالة شات
 async function sendMsg() {
     const { collection, addDoc } = window.fbTools;
     let val = document.getElementById("chatInput").value;
@@ -114,34 +159,7 @@ async function sendMsg() {
     document.getElementById("chatInput").value = "";
 }
 
-function renderPosts() {
-    document.getElementById("postsList").innerHTML = posts.map(p => `
-        <div class="post">
-            <div class="post-header"><b>${p.user}</b> <small>${p.timeStr}</small></div>
-            ${p.img ? `<div class="post-img-container"><img src="${p.img}" class="post-img" onclick="zoom('${p.img}')"></div>` : ''}
-            <div class="post-actions">
-                <span style="cursor:pointer; font-size:20px" onclick="toggleLike('${p.docId}', ${JSON.stringify(p.likedBy)})">
-                    ${p.likedBy.includes(user) ? '❤️' : '🤍'}
-                </span>
-                <b>${p.likedBy.length}</b>
-            </div>
-            <div style="padding:15px; text-align:right">${p.text}</div>
-        </div>
-    `).join('');
-}
-
-function renderChat() {
-    let div = document.getElementById("chatMsgs");
-    div.innerHTML = messages.map(m => `
-        <div class="msg ${m.user === user ? 'msg-me' : 'msg-other'}">
-            <span class="msg-sender">${m.user}</span>
-            <div>${m.text}</div>
-            <small style="opacity:0.6; font-size:8px">${m.timeStr}</small>
-        </div>
-    `).join('');
-    div.scrollTop = div.scrollHeight;
-}
-
+// لوحة الشرف (أعلى لايكات)
 function renderHall() {
     if(posts.length === 0) return;
     let best = [...posts].sort((a,b) => b.likedBy.length - a.likedBy.length)[0];
@@ -155,10 +173,14 @@ function renderHall() {
     }
 }
 
+// إشعار "يكتب الآن"
 function showTyping() {
     document.getElementById("typingArea").innerText = user + " يكتب الآن...";
     clearTimeout(window.t); window.t = setTimeout(() => document.getElementById("typingArea").innerText = "", 2000);
 }
 
+// تكبير الصورة
 function zoom(src) { document.getElementById("imgModal").style.display='flex'; document.getElementById("modalImg").src=src; }
-function copyLink() { navigator.clipboard.writeText(code); alert("تم نسخ الكود!"); }
+
+// نسخ كود الغرفة
+function copyLink() { navigator.clipboard.writeText(code); alert("تم نسخ الكود! ابعته لصحابك"); }

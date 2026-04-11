@@ -1,3 +1,5 @@
+/* تم تعديل الاتجاهات وتوزيع الأزرار في هذا الكود */
+
 :root {
     --primary: #ff4081;
     --bg: #f0f2f5;
@@ -7,7 +9,7 @@
     --chat-bg: #e5ddd5;
 }
 
-/* الوضع الليلي - تصحيح المنطق */
+/* الوضع الليلي */
 .dark-mode {
     --bg: #18191a;
     --card-bg: #242526;
@@ -27,7 +29,6 @@ body {
 
 .container { max-width: 500px; margin: 20px auto; padding: 10px; }
 
-/* الـ Overlay لقفل المنيو */
 .overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.3);
     display: none; z-index: 999;
@@ -79,9 +80,18 @@ body {
 .post-header { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
 .post-img-container { width: 100%; max-height: 400px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .post-img { width: 100%; height: auto; object-fit: contain; cursor: zoom-in; }
-.post-actions { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); }
 
-/* الشات - حل مشكلة الاتجاهات */
+/* تعديل أماكن اللايك والحفظ */
+.post-actions { 
+    padding: 12px 15px; 
+    display: flex; 
+    flex-direction: row-reverse; /* يقلب الترتيب عشان الحفظ يبقى شمال واللايك يمين */
+    justify-content: space-between; 
+    align-items: center; 
+    border-top: 1px solid rgba(0,0,0,0.05); 
+}
+
+/* الشات - تعديل الفقاعات */
 .chat-container {
     background: var(--chat-bg); height: 500px;
     display: flex; flex-direction: column; border-radius: 20px; overflow: hidden;
@@ -95,9 +105,10 @@ body {
 .msg { 
     max-width: 80%; padding: 10px 15px; border-radius: 18px; 
     font-size: 14px; line-height: 1.4;
+    word-wrap: break-word;
 }
 
-/* رسائلك تظهر في اليمين (لأن الصفحة RTL) */
+/* رسائلك تظهر في اليمين */
 .msg-me { 
     align-self: flex-start; 
     background: var(--primary); color: white; 
@@ -107,14 +118,14 @@ body {
 /* رسائل الآخرين تظهر في اليسار */
 .msg-other { 
     align-self: flex-end; 
-    background: #fff; color: #333; 
-    border-bottom-left-radius: 2px; 
+    background: #ffffff; color: #333; 
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .msg-sender { font-size: 10px; font-weight: bold; display: block; margin-bottom: 2px; opacity: 0.8; }
 #typingArea { font-size: 10px; padding: 5px 15px; color: gray; height: 15px; }
 
-/* لوحة الشرف */
 .hall-box {
     background: linear-gradient(45deg, #ffd700, #ff8c00);
     color: white; padding: 20px; border-radius: 25px; margin-bottom: 20px;
@@ -125,5 +136,6 @@ body {
 
 input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; }
 button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; }
 .modal img { max-width: 95%; max-height: 90%; }

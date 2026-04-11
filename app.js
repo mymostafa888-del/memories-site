@@ -1,4 +1,5 @@
 let user = "", room = "", code = "", posts = [], messages = [];
+const IMGBB_KEY = "02e53bd2cb207b79a2d6cdc72860038e";
 
 function toggleMenu() {
     document.getElementById("menu").classList.toggle("show");
@@ -43,38 +44,47 @@ async function initRoom(isCreate) {
 
 function listenToFirebase() {
     const { onSnapshot, collection, query, orderBy } = window.fbTools;
-    const db = window.db;
-
-    onSnapshot(query(collection(db, "rooms", code, "posts"), orderBy("id", "desc")), (snap) => {
+    onSnapshot(query(collection(window.db, "rooms", code, "posts"), orderBy("id", "desc")), (snap) => {
         posts = snap.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
         renderPosts();
     });
-
-    onSnapshot(query(collection(db, "rooms", code, "msgs"), orderBy("time", "asc")), (snap) => {
+    onSnapshot(query(collection(window.db, "rooms", code, "msgs"), orderBy("time", "asc")), (snap) => {
         messages = snap.docs.map(doc => doc.data());
         renderChat();
     });
 }
 
 async function uploadMemory() {
-    const { collection, addDoc, ref, uploadBytes, getDownloadURL } = window.fbTools;
+    const { collection, addDoc } = window.fbTools;
     let text = document.getElementById("memText").value;
     let file = document.getElementById("memFile").files[0];
-    if(!text && !file) return;
-
-    let id = Date.now();
-    let imgUrl = null;
     let label = document.getElementById("fileLabel");
+
+    if(!text && !file) return;
+    
+    let imgUrl = null;
 
     if(file) {
         label.innerText = "⏳ جاري الرفع...";
-        const sRef = ref(window.storage, `rooms/${code}/${id}`);
-        await uploadBytes(sRef, file);
-        imgUrl = await getDownloadURL(sRef);
+        let formData = new FormData();
+        formData.append("image", file);
+        
+        try {
+            let res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+                method: "POST",
+                body: formData
+            });
+            let data = await res.json();
+            imgUrl = data.data.url;
+        } catch (e) {
+            alert("فشل رفع الصورة، جرب تاني");
+            label.innerText = "📸 اختر صورة";
+            return;
+        }
     }
 
     await addDoc(collection(window.db, "rooms", code, "posts"), {
-        id, user, text, img: imgUrl, likedBy: [], 
+        id: Date.now(), user, text, img: imgUrl, likedBy: [], 
         timeStr: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     });
 
@@ -97,7 +107,6 @@ async function sendMsg() {
     const { collection, addDoc } = window.fbTools;
     let val = document.getElementById("chatInput").value;
     if(!val) return;
-    
     await addDoc(collection(window.db, "rooms", code, "msgs"), {
         user, text: val, time: Date.now(),
         timeStr: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})

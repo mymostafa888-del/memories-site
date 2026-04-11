@@ -1,3 +1,5 @@
+<!-- ******* created by : mostafa mabrok ,whatsapp: 01040857296 ******* -->
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -9,7 +11,6 @@
 <body>
 
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
 <div class="menu-icon" onclick="toggleMenu()">☰</div>
 
 <div class="sidebar" id="menu">
@@ -84,6 +85,27 @@
 </div>
 
 <div class="modal" id="imgModal" onclick="this.style.display='none'"><img id="modalImg"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA0_P3BlzuNmOU_klcncvzt6USTn6Ekzng",
+    authDomain: "memories-app-5ffe1.firebaseapp.com",
+    projectId: "memories-app-5ffe1",
+    storageBucket: "memories-app-5ffe1.firebasestorage.app",
+    messagingSenderId: "281308083131",
+    appId: "1:281308083131:web:99f35d3e3bf78e73554a9e",
+    measurementId: "G-H2JL44RC85"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.db = getFirestore(app);
+  window.storage = getStorage(app);
+  window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, ref, uploadBytes, getDownloadURL, doc, updateDoc, arrayUnion, arrayRemove };
+</script>
 
 <script src="app.js"></script>
 </body>

@@ -1,10 +1,27 @@
 let user = "", room = "", code = "", posts = [], messages = [];
 
-function toggleMenu() { document.getElementById("menu").classList.toggle("show"); }
+// تبديل المنيو والـ Overlay
+function toggleMenu() {
+    const menu = document.getElementById("menu");
+    const overlay = document.getElementById("overlay");
+    menu.classList.toggle("show");
+    overlay.classList.toggle("active");
+}
 
-function toggleDark() { document.body.classList.toggle("dark-mode"); }
+// تصحيح منطق الوضع الليلي
+function toggleDark() {
+    const isDark = document.getElementById("themeCheck").checked;
+    if (isDark) {
+        document.body.classList.add("dark-mode");
+    } else {
+        document.body.classList.remove("dark-mode");
+    }
+}
 
-function updateLabel() { if(document.getElementById("memFile").files[0]) document.getElementById("fileLabel").innerText = "✅ الصورة جاهزة"; }
+function updateLabel() { 
+    if(document.getElementById("memFile").files[0]) 
+        document.getElementById("fileLabel").innerText = "✅ الصورة جاهزة"; 
+}
 
 function showPage(p) {
     document.querySelectorAll('.container').forEach(div => div.style.display = 'none');
@@ -14,6 +31,8 @@ function showPage(p) {
         document.getElementById("generatedCode").innerText = code;
     }
     if(p === 'hallPage') renderHall();
+    
+    // إغلاق المنيو عند اختيار صفحة
     if(document.getElementById("menu").classList.contains("show")) toggleMenu();
 }
 
@@ -21,7 +40,7 @@ function initRoom(isCreate) {
     user = isCreate ? document.getElementById("userName1").value : document.getElementById("userName2").value;
     room = isCreate ? document.getElementById("roomNameInput").value : "غرفة ذكريات";
     code = isCreate ? code : document.getElementById("roomCodeInput").value;
-    if(!user || !room) return alert("الاسم والبيانات مطلوبة!");
+    if(!user) return alert("الاسم مطلوب!");
     
     document.getElementById("home").style.display = "none";
     document.getElementById("create").style.display = "none";
@@ -106,27 +125,25 @@ function renderChat() {
     div.scrollTop = div.scrollHeight;
 }
 
-function changeChatBg() {
-    const bgUrl = prompt("أدخل رابط صورة الخلفية:");
-    const container = document.getElementById("chatContainer");
-    if (bgUrl) {
-        container.style.backgroundImage = `url('${bgUrl}')`;
-    } else {
-        container.style.backgroundImage = "none";
-        container.style.backgroundColor = "var(--chat-bg)";
-    }
-}
-
 function renderHall() {
     if(posts.length === 0) return;
-    let best = [...posts].sort((a,b) => b.likedBy.length - a.likedBy.length)[0];
-    if(best.likedBy.length > 0) {
-        document.getElementById("hallBox").style.display = "block";
-        document.getElementById("bestMemoryContent").innerHTML = `
-            <p>بواسطة: <b>${best.user}</b></p>
-            ${best.img ? `<img src="${best.img}" style="width:100%; border-radius:15px">` : ''}
-            <p>${best.text}</p>
+    // ترتيب البوستات حسب عدد اللايكات
+    let sorted = [...posts].sort((a,b) => b.likedBy.length - a.likedBy.length);
+    let best = sorted[0];
+    
+    const hallBox = document.getElementById("hallBox");
+    const content = document.getElementById("bestMemoryContent");
+
+    if(best && best.likedBy.length > 0) {
+        hallBox.style.display = "block";
+        content.innerHTML = `
+            <p>صاحب الذكرى: <b>${best.user}</b></p>
+            <p>عدد التفاعلات: <b>${best.likedBy.length} ❤️</b></p>
+            ${best.img ? `<img src="${best.img}">` : ''}
+            <p style="margin-top:10px">${best.text}</p>
         `;
+    } else {
+        hallBox.style.display = "none";
     }
 }
 
@@ -136,7 +153,5 @@ function showTyping() {
 }
 
 function delPost(id) { if(confirm("حذف؟")) { posts = posts.filter(x => x.id !== id); renderPosts(); } }
-
 function zoom(src) { document.getElementById("imgModal").style.display='flex'; document.getElementById("modalImg").src=src; }
-
 function copyLink() { navigator.clipboard.writeText(code); alert("تم نسخ الكود!"); }

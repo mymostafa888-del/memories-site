@@ -8,6 +8,8 @@
 </head>
 <body>
 
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
 <div class="menu-icon" onclick="toggleMenu()">☰</div>
 
 <div class="sidebar" id="menu">
@@ -18,22 +20,22 @@
     <hr>
     <div class="setting-item">
         <span>الوضع الليلي</span>
-        <input type="checkbox" onchange="toggleDark()" style="width:30px">
+        <input type="checkbox" id="themeCheck" onchange="toggleDark()" style="width:30px">
     </div>
     <button onclick="copyLink()" style="background:#4267B2">🔗 نسخ كود الغرفة</button>
     <button onclick="location.reload()" style="background:#555">خروج</button>
 </div>
 
 <div class="container" id="home">
-    <h1 style="text-align:center; color: #ff4081;">Memories Elite</h1>
+    <h1 style="text-align:center; color: #ff4081;">Memories App</h1>
     <button onclick="showPage('create')">إنشاء غرفة جديدة</button>
-    <button onclick="showPage('join')">انضمام لصديق</button>
+    <button onclick="showPage('join')">انضمام لغرفة</button>
 </div>
 
 <div class="container" id="create" style="display:none">
     <h3>إنشاء غرفة</h3>
-    <input id="roomNameInput" placeholder="اسم الغرفة">
     <input id="userName1" placeholder="اسمك">
+    <input id="roomNameInput" placeholder="اسم الغرفة">
     <p>الكود: <b id="generatedCode" style="color:#ff4081"></b></p>
     <button onclick="initRoom(true)">ابدأ الرحلة</button>
 </div>
@@ -63,7 +65,6 @@
 
     <div class="container" id="chatPage" style="display:none">
         <div class="chat-container" id="chatContainer">
-            <button class="bg-btn" onclick="changeChatBg()" title="تغيير الخلفية">🖼️</button>
             <div class="chat-messages" id="chatMsgs"></div>
             <div id="typingArea"></div>
             <div class="chat-input-area" style="display: flex; gap: 5px; padding: 10px; background: var(--card-bg);">

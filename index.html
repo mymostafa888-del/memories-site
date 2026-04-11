@@ -62,10 +62,11 @@
     </div>
 
     <div class="container" id="chatPage" style="display:none">
-        <div class="chat-container">
+        <div class="chat-container" id="chatContainer">
+            <button class="bg-btn" onclick="changeChatBg()" title="تغيير الخلفية">🖼️</button>
             <div class="chat-messages" id="chatMsgs"></div>
             <div id="typingArea"></div>
-            <div class="chat-input-area">
+            <div class="chat-input-area" style="display: flex; gap: 5px; padding: 10px; background: var(--card-bg);">
                 <input id="chatInput" placeholder="رسالتك..." oninput="showTyping()">
                 <button onclick="sendMsg()" style="width:70px">إرسال</button>
             </div>

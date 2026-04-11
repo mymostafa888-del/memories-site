@@ -1,7 +1,9 @@
 let user = "", room = "", code = "", posts = [], messages = [];
 
 function toggleMenu() { document.getElementById("menu").classList.toggle("show"); }
+
 function toggleDark() { document.body.classList.toggle("dark-mode"); }
+
 function updateLabel() { if(document.getElementById("memFile").files[0]) document.getElementById("fileLabel").innerText = "✅ الصورة جاهزة"; }
 
 function showPage(p) {
@@ -97,11 +99,22 @@ function renderChat() {
     div.innerHTML = messages.map(m => `
         <div class="msg ${m.user === user ? 'msg-me' : 'msg-other'}">
             <span class="msg-sender">${m.user}</span>
-            ${m.text}
+            <div>${m.text}</div>
             <small style="font-size:8px; display:block; margin-top:5px; opacity:0.6">${m.time}</small>
         </div>
     `).join('');
     div.scrollTop = div.scrollHeight;
+}
+
+function changeChatBg() {
+    const bgUrl = prompt("أدخل رابط صورة الخلفية:");
+    const container = document.getElementById("chatContainer");
+    if (bgUrl) {
+        container.style.backgroundImage = `url('${bgUrl}')`;
+    } else {
+        container.style.backgroundImage = "none";
+        container.style.backgroundColor = "var(--chat-bg)";
+    }
 }
 
 function renderHall() {
@@ -111,7 +124,7 @@ function renderHall() {
         document.getElementById("hallBox").style.display = "block";
         document.getElementById("bestMemoryContent").innerHTML = `
             <p>بواسطة: <b>${best.user}</b></p>
-            ${best.img ? `<img src="${best.bestImg || best.img}" style="width:100%; border-radius:15px">` : ''}
+            ${best.img ? `<img src="${best.img}" style="width:100%; border-radius:15px">` : ''}
             <p>${best.text}</p>
         `;
     }
@@ -123,5 +136,7 @@ function showTyping() {
 }
 
 function delPost(id) { if(confirm("حذف؟")) { posts = posts.filter(x => x.id !== id); renderPosts(); } }
+
 function zoom(src) { document.getElementById("imgModal").style.display='flex'; document.getElementById("modalImg").src=src; }
+
 function copyLink() { navigator.clipboard.writeText(code); alert("تم نسخ الكود!"); }
